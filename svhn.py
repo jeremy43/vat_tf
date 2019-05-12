@@ -21,7 +21,7 @@ DATA_URL_TRAIN = 'http://ufldl.stanford.edu/housenumbers/train_32x32.mat'
 DATA_URL_TEST = 'http://ufldl.stanford.edu/housenumbers/test_32x32.mat'
 
 FLAGS = tf.app.flags.FLAGS
-tf.app.flags.DEFINE_string('data_dir', '/tmp/svhn', "")
+tf.app.flags.DEFINE_string('data_dir', '/Users/yuqing/github_proj/privacy/research/data', "")
 tf.app.flags.DEFINE_integer('num_labeled_examples', 1000, "The number of labeled examples")
 tf.app.flags.DEFINE_integer('num_valid_examples', 1000, "The number of validation examples")
 tf.app.flags.DEFINE_integer('dataset_seed', 1, "dataset seed")
@@ -70,10 +70,10 @@ def maybe_download_and_extract():
 
 def load_svhn():
     maybe_download_and_extract()
-    train_images = np.load('{}/train_images.npy'.format(FLAGS.data_dir)).astype(np.float32)
-    train_labels = np.load('{}/train_labels.npy'.format(FLAGS.data_dir)).astype(np.float32)
-    test_images = np.load('{}/test_images.npy'.format(FLAGS.data_dir)).astype(np.float32)
-    test_labels = np.load('{}/test_labels.npy'.format(FLAGS.data_dir)).astype(np.float32)
+    train_images = np.load('{}/svhn_train_images.npy'.format(FLAGS.data_dir)).astype(np.float32)
+    train_labels = np.load('{}/svhn_train_labels.npy'.format(FLAGS.data_dir)).astype(np.float32)
+    test_images = np.load('{}/svhn_test_images.npy'.format(FLAGS.data_dir)).astype(np.float32)
+    test_labels = np.load('{}/svhn_test_labels.npy'.format(FLAGS.data_dir)).astype(np.float32)
     return (train_images, train_labels), (test_images, test_labels)
 
 
