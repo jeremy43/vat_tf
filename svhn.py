@@ -21,11 +21,7 @@ DATA_URL_TRAIN = 'http://ufldl.stanford.edu/housenumbers/train_32x32.mat'
 DATA_URL_TEST = 'http://ufldl.stanford.edu/housenumbers/test_32x32.mat'
 
 FLAGS = tf.app.flags.FLAGS
-<<<<<<< HEAD
-tf.app.flags.DEFINE_string('data_dir', '../data', "")
-=======
 tf.app.flags.DEFINE_string('data_dir', '../research/data/svhn', "")
->>>>>>> 9158c4b58bdaa2f42ae0dea4c11117b660d068b3
 tf.app.flags.DEFINE_integer('num_labeled_examples', 1000, "The number of labeled examples")
 tf.app.flags.DEFINE_integer('num_valid_examples', 1000, "The number of validation examples")
 tf.app.flags.DEFINE_integer('dataset_seed', 1, "dataset seed")
@@ -81,24 +77,30 @@ def load_svhn():
     return (train_images, train_labels), (test_images, test_labels)
 
 def prepare_dataset_with_pate():
+    dirpath = os.path.join(FLAGS.data_dir, 'seed' + str(FLAGS.dataset_seed))
+    if not os.path.exists(dirpath):
+        os.makedirs(dirpath)
 
-    file_path = "../vat_tf/log/suvn_query=1200'+'pkl'
+    file_path = 'log/svhn_query=8217.pkl'
     with open(file_path,'rb') as f:
         log = pickle.load(f)
     train_images = log['train_data']
     train_labels = log['train_label']
     test_images = log['test_data']
-    test_lables = log['test_label']
+    test_labels = log['test_label']
     labeled_train_images = log['labeled_data']
     labeled_train_labels = log['labeled_label']
+    unlabel_train_img = np.concatenate((train_images,labeled_train_images),axis=0)
+    unlabel_train_label = np.concatenate((train_labels,labeled_train_labels), axis=0)
     convert_images_and_labels(labeled_train_images,
                               labeled_train_labels,
                               os.path.join(dirpath, 'labeled_train.tfrecords'))  # originally it has 72257*3072
-    convert_images_and_labels(train_images, train_labels,
+    convert_images_and_labels(unlabel_train_img, unlabel_train_label,
                               os.path.join(dirpath, 'unlabeled_train.tfrecords'))
     convert_images_and_labels(test_images,
                               test_labels,
                               os.path.join(dirpath, 'test.tfrecords'))
+    rng = np.random.RandomState(FLAGS.dataset_seed)
     rand_ix = rng.permutation(len(train_images))
     print(rand_ix)
     _train_images, _train_labels = train_images[rand_ix], train_labels[rand_ix]
@@ -208,7 +210,8 @@ def unlabeled_inputs(batch_size=100,
 
 
 def main(argv):
-    prepare_dataset()
+    prepare_dataset_with_pate()
+    #prepare_dataset()
 
 
 if __name__ == "__main__":
