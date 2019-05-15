@@ -21,7 +21,7 @@ DATA_URL_TRAIN = 'http://ufldl.stanford.edu/housenumbers/train_32x32.mat'
 DATA_URL_TEST = 'http://ufldl.stanford.edu/housenumbers/test_32x32.mat'
 
 FLAGS = tf.app.flags.FLAGS
-tf.app.flags.DEFINE_string('data_dir', '/Users/yuqing/github_proj/privacy/research/data', "")
+tf.app.flags.DEFINE_string('data_dir', '../data', "")
 tf.app.flags.DEFINE_integer('num_labeled_examples', 1000, "The number of labeled examples")
 tf.app.flags.DEFINE_integer('num_valid_examples', 1000, "The number of validation examples")
 tf.app.flags.DEFINE_integer('dataset_seed', 1, "dataset seed")
@@ -76,6 +76,47 @@ def load_svhn():
     test_labels = np.load('{}/svhn_test_labels.npy'.format(FLAGS.data_dir)).astype(np.float32)
     return (train_images, train_labels), (test_images, test_labels)
 
+def prepare_dataset_with_pate():
+
+    file_path = "../vat_tf/log/suvn_query=1200'+'pkl'
+    with open(file_path,'rb') as f:
+        log = pickle.load(f)
+    train_images = log['train_data']
+    train_labels = log['train_label']
+    test_images = log['test_data']
+    test_lables = log['test_label']
+    labeled_train_images = log['labeled_data']
+    labeled_train_labels = log['labeled_label']
+    convert_images_and_labels(labeled_train_images,
+                              labeled_train_labels,
+                              os.path.join(dirpath, 'labeled_train.tfrecords'))  # originally it has 72257*3072
+    convert_images_and_labels(train_images, train_labels,
+                              os.path.join(dirpath, 'unlabeled_train.tfrecords'))
+    convert_images_and_labels(test_images,
+                              test_labels,
+                              os.path.join(dirpath, 'test.tfrecords'))
+    rand_ix = rng.permutation(len(train_images))
+    print(rand_ix)
+    _train_images, _train_labels = train_images[rand_ix], train_labels[rand_ix]
+
+    # Construct dataset for validation
+    train_images_valid, train_labels_valid = labeled_train_images, labeled_train_labels
+    test_images_valid, test_labels_valid = \
+        _train_images[:FLAGS.num_valid_examples], _train_labels[:FLAGS.num_valid_examples]
+    unlabeled_train_images_valid = np.concatenate(
+        (train_images_valid, _train_images), axis=0)
+    unlabeled_train_labels_valid = np.concatenate(
+        (train_labels_valid, _train_labels), axis=0)
+    convert_images_and_labels(train_images_valid,
+                              train_labels_valid,
+                              os.path.join(dirpath, 'labeled_train_val.tfrecords'))
+    convert_images_and_labels(unlabeled_train_images_valid,
+                              unlabeled_train_labels_valid,
+                              os.path.join(dirpath, 'unlabeled_train_val.tfrecords'))
+    convert_images_and_labels(test_images_valid,
+                              test_labels_valid,
+                              os.path.join(dirpath, 'test_val.tfrecords'))
+
 
 def prepare_dataset():
     (train_images, train_labels), (test_images, test_labels) = load_svhn()
@@ -94,7 +135,7 @@ def prepare_dataset():
     _train_labels = np.delete(_train_labels, labeled_ind, 0)
     convert_images_and_labels(labeled_train_images,
                               labeled_train_labels,
-                              os.path.join(dirpath, 'labeled_train.tfrecords'))
+                              os.path.join(dirpath, 'labeled_train.tfrecords')) #originally it has 72257*3072
     convert_images_and_labels(train_images, train_labels,
                               os.path.join(dirpath, 'unlabeled_train.tfrecords'))
     convert_images_and_labels(test_images,
