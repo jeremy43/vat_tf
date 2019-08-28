@@ -10,7 +10,7 @@ FLAGS = tf.app.flags.FLAGS
 
 tf.app.flags.DEFINE_string('device', '/gpu:0', "device")
 
-tf.app.flags.DEFINE_string('dataset', 'svhn', "{cifar10, svhn}")
+tf.app.flags.DEFINE_string('dataset', 'mnist', "{cifar10, svhn}")
 
 tf.app.flags.DEFINE_string('log_dir', "./log", "log_dir")
 tf.app.flags.DEFINE_integer('seed', 1, "initial random seed")
@@ -33,14 +33,16 @@ tf.app.flags.DEFINE_string('method', 'vat', "{vat, vatent, baseline}")
 if FLAGS.dataset == 'cifar10':
     from cifar10 import inputs, unlabeled_inputs
 elif FLAGS.dataset == 'svhn':
-    from svhn import inputs, unlabeled_inputs 
+    from svhn import inputs, unlabeled_inputs
+elif FLAGS.dataset == 'mnist':
+    from mnist import inputs, unlabeled_inputs
 else: 
     raise NotImplementedError
 
 
-NUM_EVAL_EXAMPLES = 5000
+#NUM_EVAL_EXAMPLES = 5000
 
-
+NUM_EVAL_EXAMPLES = 1000
 def build_training_graph(x, y, ul_x, lr, mom):
     global_step = tf.get_variable(
         name="global_step",
